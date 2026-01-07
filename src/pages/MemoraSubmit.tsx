@@ -4,13 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Cake, Check, AlertCircle } from "lucide-react";
 
 const MemoraSubmit = () => {
   const { refCode } = useParams<{ refCode: string }>();
-  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -21,32 +19,20 @@ const MemoraSubmit = () => {
   const [birthDate, setBirthDate] = useState("");
   const [whatsappNumber, setWhatsappNumber] = useState("");
 
-  // Lookup user_id from ref_code
+  // Validate ref_code exists
   useEffect(() => {
-    const lookupUser = async () => {
-      if (!refCode) {
+    const validateRefCode = async () => {
+      if (!refCode || refCode.length < 6) {
         setError("Invalid link");
         setLoading(false);
         return;
       }
 
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("user_id")
-        .eq("ref_code", refCode)
-        .single();
-
-      if (error || !data) {
-        setError("User not found");
-        setLoading(false);
-        return;
-      }
-
-      setUserId(data.user_id);
+      // Just validate the format - the edge function will verify if it exists
       setLoading(false);
     };
 
-    lookupUser();
+    validateRefCode();
   }, [refCode]);
 
   // Auto-format date input as DD/MM/YYYY
@@ -80,8 +66,8 @@ const MemoraSubmit = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!userId) {
-      toast.error("Error: user not found");
+    if (!refCode) {
+      toast.error("Invalid referral code");
       return;
     }
 
@@ -96,24 +82,54 @@ const MemoraSubmit = () => {
       return;
     }
 
+    // Validate phone has international prefix
+    const cleanedPhone = whatsappNumber.trim().replace(/[\s\-()]/g, "");
+    if (!cleanedPhone.startsWith("+") || cleanedPhone.length < 8) {
+      toast.error("Please include international prefix (e.g., +1)");
+      return;
+    }
+
     setSubmitting(true);
 
-    const { error } = await supabase.from("memora_contacts").insert({
-      user_id: userId,
-      first_name: firstName.trim(),
-      last_name: lastName.trim(),
-      birth_date: formattedDate,
-      whatsapp_number: whatsappNumber.trim(),
-    });
+    try {
+      const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
+      const response = await fetch(`${projectUrl}/functions/v1/memora-signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+        },
+        body: JSON.stringify({
+          first_name: firstName.trim(),
+          last_name: lastName.trim(),
+          birth_date: formattedDate,
+          whatsapp_number: cleanedPhone,
+          ref_code: refCode,
+        }),
+      });
 
-    setSubmitting(false);
+      const result = await response.json();
 
-    if (error) {
-      console.error("Error submitting:", error);
-      toast.error("Error saving. Please try again.");
-    } else {
+      if (!response.ok) {
+        console.error("Error submitting:", result.error);
+        if (response.status === 429) {
+          toast.error("Too many submissions. Please try again later.");
+        } else if (response.status === 409) {
+          toast.error("This phone number is already registered.");
+        } else {
+          toast.error(result.error || "Error saving. Please try again.");
+        }
+        setSubmitting(false);
+        return;
+      }
+
       setSubmitted(true);
       toast.success("Data saved successfully!");
+    } catch (error) {
+      console.error("Error submitting:", error);
+      toast.error("Error saving. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
   };
 

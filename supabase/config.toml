@@ -137,3 +137,6 @@ verify_jwt = true
 
 [functions.book-demo]
 verify_jwt = true
+
+[functions.memora-signup]
+verify_jwt = false

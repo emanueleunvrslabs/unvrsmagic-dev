@@ -304,6 +304,11 @@ async function storeMessage(
   }
 }
 
+// Escape SQL LIKE wildcards to prevent injection
+function escapeLikePattern(input: string): string {
+  return input.replace(/%/g, '\\%').replace(/_/g, '\\_')
+}
+
 async function identifySender(
   supabase: any, 
   ownerId: string, 
@@ -311,14 +316,15 @@ async function identifySender(
   contact: string
 ): Promise<{ type: 'owner' | 'client' | 'lead' | 'public', client_id?: string, lead_id?: string, name?: string }> {
   
-  // OWNER PHONE NUMBER - has full powers
-  const OWNER_PHONE = '34625976744'
+  // Get owner phone from environment variable (secure, not hardcoded)
+  const OWNER_PHONE = Deno.env.get('OWNER_PHONE_NUMBER') || ''
   
   // Check if sender is the OWNER
-  if (channel === 'whatsapp' || channel === 'phone') {
+  if ((channel === 'whatsapp' || channel === 'phone') && OWNER_PHONE) {
     const normalizedContact = contact.replace(/[^\d]/g, '')
-    if (normalizedContact === OWNER_PHONE || normalizedContact.endsWith(OWNER_PHONE)) {
-      console.log('[UNVRS.BRAIN] Owner detected from phone:', normalizedContact)
+    const normalizedOwner = OWNER_PHONE.replace(/[^\d]/g, '')
+    if (normalizedContact === normalizedOwner || normalizedContact.endsWith(normalizedOwner)) {
+      console.log('[UNVRS.BRAIN] Owner detected')
       return {
         type: 'owner',
         name: 'Emanuele'
@@ -328,10 +334,12 @@ async function identifySender(
   
   // Check if it's an existing client by phone or email
   if (channel === 'whatsapp' || channel === 'phone') {
+    // Normalize phone number for exact matching (more secure than LIKE)
+    const normalizedPhone = contact.replace(/[^\d]/g, '')
     const { data: clientContact } = await supabase
       .from('client_contacts')
       .select('client_id, first_name, last_name, clients!inner(id, user_id)')
-      .ilike('whatsapp_number', `%${contact}%`)
+      .or(`whatsapp_number.ilike.%${escapeLikePattern(normalizedPhone)}%`)
       .limit(1)
       .single()
 
@@ -345,10 +353,11 @@ async function identifySender(
   }
 
   if (channel === 'email') {
+    const escapedEmail = escapeLikePattern(contact)
     const { data: clientContact } = await supabase
       .from('client_contacts')
       .select('client_id, first_name, last_name')
-      .ilike('email', contact)
+      .ilike('email', escapedEmail)
       .limit(1)
       .single()
 
@@ -361,12 +370,13 @@ async function identifySender(
     }
   }
 
-  // Check if it's an existing lead
+  // Check if it's an existing lead - use escaped patterns
+  const escapedContact = escapeLikePattern(contact)
   const { data: lead } = await supabase
     .from('unvrs_leads')
     .select('id, name, phone, email')
     .eq('user_id', ownerId)
-    .or(`phone.ilike.%${contact}%,email.ilike.%${contact}%`)
+    .or(`phone.ilike.%${escapedContact}%,email.ilike.%${escapedContact}%`)
     .limit(1)
     .single()
 
@@ -897,16 +907,18 @@ async function generateAgentResponse(
               let query = supabase.from(table).select('*')
               
               if (search_term) {
+                // Escape SQL LIKE wildcards to prevent injection
+                const escapedTerm = escapeLikePattern(search_term)
                 if (table === 'clients') {
-                  query = query.or(`company_name.ilike.%${search_term}%,vat_number.ilike.%${search_term}%`)
+                  query = query.or(`company_name.ilike.%${escapedTerm}%,vat_number.ilike.%${escapedTerm}%`)
                 } else if (table === 'client_contacts') {
                   query = supabase.from(table).select('*, clients(company_name)')
-                    .or(`first_name.ilike.%${search_term}%,last_name.ilike.%${search_term}%,email.ilike.%${search_term}%,whatsapp_number.ilike.%${search_term}%`)
+                    .or(`first_name.ilike.%${escapedTerm}%,last_name.ilike.%${escapedTerm}%,email.ilike.%${escapedTerm}%,whatsapp_number.ilike.%${escapedTerm}%`)
                 } else if (table === 'unvrs_leads') {
-                  query = query.or(`name.ilike.%${search_term}%,email.ilike.%${search_term}%,phone.ilike.%${search_term}%,company.ilike.%${search_term}%`)
+                  query = query.or(`name.ilike.%${escapedTerm}%,email.ilike.%${escapedTerm}%,phone.ilike.%${escapedTerm}%,company.ilike.%${escapedTerm}%`)
                 } else if (table === 'client_projects') {
                   query = supabase.from(table).select('*, clients(company_name)')
-                    .or(`project_name.ilike.%${search_term}%,description.ilike.%${search_term}%`)
+                    .or(`project_name.ilike.%${escapedTerm}%,description.ilike.%${escapedTerm}%`)
                 }
               }
               
