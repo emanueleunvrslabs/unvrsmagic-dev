@@ -158,16 +158,32 @@ const DelibereAreraPage = () => {
     });
 
     try {
-      const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID as string;
+      // Get the current session for authentication
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        appendLog({
+          type: "error",
+          message: "Non sei autenticato. Effettua il login e riprova.",
+          timestamp: new Date(),
+        });
+        toast({
+          title: "Non autenticato",
+          description: "Effettua il login per sincronizzare le delibere.",
+          variant: "destructive",
+        });
+        setIsSyncing(false);
+        return;
+      }
 
+      const projectUrl = import.meta.env.VITE_SUPABASE_URL as string;
       const functionUrl = `${projectUrl}/functions/v1/arera-scraper`;
 
       const response = await fetch(functionUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+          "Authorization": `Bearer ${session.access_token}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
         },
         body: JSON.stringify({ action: "sync" }),
       });

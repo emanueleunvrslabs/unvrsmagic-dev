@@ -13,18 +13,67 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
+    
+    // Verify the request comes from an authenticated user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Missing or invalid authorization header' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Create a client with the user's auth token to verify their identity
+    const anonClient = createClient(supabaseUrl, anonKey, {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    const { data: { user }, error: authError } = await anonClient.auth.getUser();
+    if (authError || !user) {
+      console.error('Auth error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized - Invalid token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = user.id;
+    console.log(`Authenticated user: ${userId}`);
+
+    // Use service role for database operations
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    // Verify user has owner role
+    const { data: userRole, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', userId)
+      .eq('role', 'owner')
+      .maybeSingle();
+
+    if (roleError || !userRole) {
+      console.error('Role check error:', roleError, 'User role:', userRole);
+      return new Response(
+        JSON.stringify({ error: 'Forbidden - Owner role required' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Parse request body for action
     let action = "sync";
     try {
-      const body = await req.json();
-      action = body.action || "sync";
+      const bodyText = await req.text();
+      if (bodyText) {
+        const body = JSON.parse(bodyText);
+        action = body.action || "sync";
+      }
     } catch {
       // No body or invalid JSON, default to sync
     }
 
-    console.log(`Starting ARERA scraper with action: ${action}`);
+    console.log(`Starting ARERA scraper with action: ${action} for owner: ${userId}`);
 
     // Get owner's API keys (Anthropic for summarization, Firecrawl for scraping)
     const { data: ownerRole } = await supabase
