@@ -18,7 +18,7 @@ export function LandingCTANew() {
       </div>
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="liquid-glass-card liquid-glass-morph max-w-4xl mx-auto p-12 md:p-16">
+        <div className="liquid-glass-card max-w-4xl mx-auto p-12 md:p-16 hover:bg-white/[0.06] transition-colors duration-300">
           <div className="relative z-10 text-center">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
