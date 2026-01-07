@@ -10,12 +10,8 @@ export function LandingCTANew() {
 
   return (
     <section id="contact" ref={ref} className="py-32 bg-black relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/10 to-cyan-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDuration: "6s" }} />
-        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-2xl animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-cyan-500/10 rounded-full blur-2xl animate-float" style={{ animationDelay: "2s" }} />
-      </div>
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-500/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
         <div className="liquid-glass-card max-w-4xl mx-auto p-12 md:p-16 hover:bg-white/[0.06] transition-colors duration-300">
