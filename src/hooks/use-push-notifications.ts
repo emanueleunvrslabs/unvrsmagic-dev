@@ -31,7 +31,7 @@ export const usePushNotifications = () => {
       setRegistration(reg)
 
       // Check if already subscribed
-      const subscription = await reg.pushManager.getSubscription()
+      const subscription = await (reg as any).pushManager?.getSubscription()
       setIsSubscribed(!!subscription)
     } catch (error) {
       console.error('Service Worker registration failed:', error)
@@ -72,7 +72,7 @@ export const usePushNotifications = () => {
     try {
       // For demo purposes, we'll use a simple subscription
       // In production, you'd get the VAPID public key from your server
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await (registration as any).pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: null, // Would use VAPID key in production
       })
@@ -97,7 +97,7 @@ export const usePushNotifications = () => {
     }
 
     try {
-      const subscription = await registration.pushManager.getSubscription()
+      const subscription = await (registration as any).pushManager?.getSubscription()
       if (subscription) {
         await subscription.unsubscribe()
         setIsSubscribed(false)
