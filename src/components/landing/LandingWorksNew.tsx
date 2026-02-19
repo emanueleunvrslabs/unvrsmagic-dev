@@ -73,7 +73,7 @@ export function LandingWorksNew() {
             </div>
 
             <a
-              href="https://magica.unvrslabs.dev"
+              href="https://magicai.unvrslabs.dev"
               target="_blank"
               rel="noopener noreferrer"
               className="liquid-glass-pill flex items-center gap-2 px-6 py-3 text-white hover:bg-white/10 transition-all group/btn"
