@@ -26,24 +26,24 @@ export function LandingWorksNew() {
         {/* Single showcase card */}
         <div className="liquid-glass-card liquid-glass-interactive liquid-glass-specular overflow-hidden group max-w-4xl mx-auto">
           {/* Hero visual area */}
-          <div className="relative aspect-[16/7] overflow-hidden">
+          <div className="relative aspect-[16/9] md:aspect-[16/7] overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 via-fuchsia-500/20 to-cyan-500/20" />
-            <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-8 text-center">
-              <div className="liquid-glass-pill px-4 py-2 flex items-center gap-2">
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 md:gap-4 p-5 md:p-8 text-center">
+              <div className="liquid-glass-pill px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2">
                 <Sparkles size={14} className="text-purple-400" />
-                <span className="text-xs text-white/80" style={{ fontFamily: "Orbitron, sans-serif" }}>
+                <span className="text-[10px] md:text-xs text-white/80" style={{ fontFamily: "Orbitron, sans-serif" }}>
                   Powered by AI
                 </span>
               </div>
               <h3
-                className="text-3xl md:text-5xl font-bold text-white leading-tight"
+                className="text-xl sm:text-3xl md:text-5xl font-bold text-white leading-tight"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
                 Create <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-fuchsia-400">stunning visuals</span>
                 <br />with AI magic
               </h3>
               <p
-                className="text-white/60 text-sm md:text-base max-w-lg"
+                className="text-white/60 text-xs md:text-base max-w-lg hidden sm:block"
                 style={{ fontFamily: "Orbitron, sans-serif" }}
               >
                 Generate breathtaking images and videos using the world's most advanced AI models. From concept to creation in seconds.
@@ -52,21 +52,21 @@ export function LandingWorksNew() {
           </div>
 
           {/* Features + CTA */}
-          <div className="p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-6">
+          <div className="p-4 md:p-8 flex flex-col items-center gap-4 md:flex-row md:justify-between md:gap-6">
+            <div className="flex items-center gap-4 md:gap-6">
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                  <Image size={16} className="text-purple-400" />
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+                  <Image size={14} className="text-purple-400" />
                 </div>
-                <span className="text-white/70 text-sm" style={{ fontFamily: "Orbitron, sans-serif" }}>
+                <span className="text-white/70 text-xs md:text-sm" style={{ fontFamily: "Orbitron, sans-serif" }}>
                   Image Generation
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                  <Video size={16} className="text-cyan-400" />
+                <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+                  <Video size={14} className="text-cyan-400" />
                 </div>
-                <span className="text-white/70 text-sm" style={{ fontFamily: "Orbitron, sans-serif" }}>
+                <span className="text-white/70 text-xs md:text-sm" style={{ fontFamily: "Orbitron, sans-serif" }}>
                   Video Generation
                 </span>
               </div>
@@ -76,7 +76,7 @@ export function LandingWorksNew() {
               href="https://magicai.unvrslabs.dev"
               target="_blank"
               rel="noopener noreferrer"
-              className="liquid-glass-pill flex items-center gap-2 px-6 py-3 text-white hover:bg-white/10 transition-all group/btn"
+              className="liquid-glass-pill flex items-center gap-2 px-6 py-3 text-white hover:bg-white/10 transition-all group/btn w-full md:w-auto justify-center"
               style={{ fontFamily: "Orbitron, sans-serif" }}
             >
               <span className="text-sm font-medium">Try Magic AI</span>
