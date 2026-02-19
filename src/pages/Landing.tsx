@@ -10,23 +10,31 @@ import { LandingStats } from "@/components/landing/LandingStats";
 import { LandingCTANew } from "@/components/landing/LandingCTANew";
 import { LandingFooterNew } from "@/components/landing/LandingFooterNew";
 import { LandingFlagshipProjects } from "@/components/landing/LandingFlagshipProjects";
+import { Helmet } from "react-helmet-async";
 
 const Landing = () => {
   return (
-    <div className="bg-black min-h-screen">
-      <LandingNav />
-      <LandingHeroNew />
-      <LandingClaim />
-      <LandingBrands />
-      <LandingServicesNew />
-      <LandingScrollText />
-      <LandingWorksNew />
-      <LandingFlagshipProjects />
-      <LandingStats />
-      <LandingReviews />
-      <LandingCTANew />
-      <LandingFooterNew />
-    </div>
+    <>
+      <Helmet>
+        <title>UNVRS LABS — AI Integration, Custom Software & Digital Solutions</title>
+        <meta name="description" content="UNVRS LABS is a technology studio specializing in AI integration, custom enterprise software, mobile applications, cloud architecture, and digital transformation. We build scalable, innovative solutions that drive business growth." />
+        <link rel="canonical" href="https://unvrsmagic.lovable.app/" />
+      </Helmet>
+      <main className="bg-black min-h-screen" role="main">
+        <LandingNav />
+        <LandingHeroNew />
+        <LandingClaim />
+        <LandingBrands />
+        <LandingServicesNew />
+        <LandingScrollText />
+        <LandingWorksNew />
+        <LandingFlagshipProjects />
+        <LandingStats />
+        <LandingReviews />
+        <LandingCTANew />
+        <LandingFooterNew />
+      </main>
+    </>
   );
 };
 

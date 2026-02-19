@@ -3,7 +3,7 @@ import logo from "@/assets/logo-unvrs.png";
 
 export function LandingFooterNew() {
   return (
-    <footer className="py-16 bg-black relative">
+    <footer className="py-16 bg-black relative" role="contentinfo" aria-label="Footer">
       {/* Top border with glass effect */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 

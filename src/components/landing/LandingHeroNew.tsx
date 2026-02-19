@@ -59,7 +59,7 @@ export function LandingHeroNew() {
           }
         }
       `}</style>
-      <section id="home" className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden pt-24">
+      <section id="home" className="relative min-h-screen bg-black flex items-center justify-center overflow-hidden pt-24" aria-label="Hero">
         {/* Black background */}
         <div className="absolute inset-0 bg-black" />
 
@@ -68,6 +68,8 @@ export function LandingHeroNew() {
             {/* Title - Centered */}
             <div className="text-center">
               <div>
+                {/* Hidden H1 for SEO — the visual title is animated spans */}
+                <h1 className="sr-only">UNVRS LABS — AI Integration, Custom Software & Digital Solutions</h1>
                 <p
                   className="text-white/60 text-sm mb-4 tracking-widest"
                   style={{ fontFamily: "Orbitron, sans-serif" }}
