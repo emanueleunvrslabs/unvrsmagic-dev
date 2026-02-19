@@ -18,7 +18,7 @@ export function LandingNav({ showBack = false, backTo }: LandingNavProps) {
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
 
   const navItems = [
-    { label: "HOME", href: "#hero", sectionId: "hero" },
+    { label: "HOME", href: "#home", sectionId: "home" },
     { label: "SERVICES", href: "#services", sectionId: "services" },
     { label: "MAGIC AI", href: "#works", sectionId: "works" },
     { label: "FOUNDATIONS", href: "#foundations", sectionId: "foundations" },
