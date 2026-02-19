@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { Instagram, Linkedin } from "lucide-react";
 import logo from "@/assets/logo-unvrs.png";
 
 export function LandingFooterNew() {
@@ -30,9 +31,29 @@ export function LandingFooterNew() {
               <p className="text-white font-semibold text-lg mb-3" style={{ fontFamily: "Orbitron, sans-serif" }}>
                 UNVRS LABS
               </p>
-              <p className="text-white/60 text-sm leading-relaxed" style={{ fontFamily: "Orbitron, sans-serif" }}>
+              <p className="text-white/60 text-sm leading-relaxed mb-4" style={{ fontFamily: "Orbitron, sans-serif" }}>
                 Coding the Universe, One Pixel at a Time
               </p>
+              <div className="flex gap-3">
+                <a
+                  href="https://www.instagram.com/unvrslabs.dev"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                  className="liquid-glass-pill p-2.5 hover:bg-white/10 transition-colors"
+                >
+                  <Instagram size={18} className="text-white/70 hover:text-white transition-colors" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/company/107038862"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className="liquid-glass-pill p-2.5 hover:bg-white/10 transition-colors"
+                >
+                  <Linkedin size={18} className="text-white/70 hover:text-white transition-colors" />
+                </a>
+              </div>
             </div>
 
             {/* Quick Links */}
