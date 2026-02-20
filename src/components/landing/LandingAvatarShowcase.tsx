@@ -7,11 +7,20 @@ export function LandingAvatarShowcase() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-20 bg-black relative overflow-hidden flex flex-col items-center justify-center">
-      {/* Background glow */}
+    <section
+      ref={ref}
+      className="py-16 bg-black relative overflow-hidden flex flex-col items-center justify-center"
+    >
+      {/* Background glows */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-cyan-500/10 rounded-full blur-2xl" />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+          style={{ width: 600, height: 600, background: "radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)" }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
+          style={{ width: 300, height: 300, background: "radial-gradient(circle, rgba(34,211,238,0.08) 0%, transparent 70%)" }}
+        />
       </div>
 
       <motion.div
@@ -20,21 +29,28 @@ export function LandingAvatarShowcase() {
         transition={{ duration: 0.8, ease: "easeOut" }}
         className="relative flex flex-col items-center"
       >
-        {/* Avatar video — background removed via mix-blend-mode */}
-        <div className="relative w-[260px] sm:w-[340px] md:w-[420px] aspect-[9/16] mx-auto">
-          {/* Subtle radial glow beneath avatar */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-24 bg-purple-500/20 blur-2xl rounded-full" />
+        {/* Video container — black background needed for multiply blend mode */}
+        <div
+          className="relative w-[260px] sm:w-[340px] md:w-[420px] mx-auto"
+          style={{ aspectRatio: "9/16", background: "#000000" }}
+        >
+          {/* Glow beneath feet */}
+          <div
+            className="absolute bottom-0 left-1/2 -translate-x-1/2 rounded-full blur-2xl"
+            style={{ width: "70%", height: 60, background: "rgba(168,85,247,0.25)" }}
+          />
 
+          {/* multiply renders white bg as transparent on black container */}
           <video
             src={avatarVideo}
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-full object-cover"
+            className="w-full h-full object-contain relative z-10"
             style={{
-              mixBlendMode: "screen",
-              filter: "contrast(1.05) brightness(1.1)",
+              mixBlendMode: "multiply",
+              filter: "contrast(1.15) saturate(1.2)",
             }}
           />
         </div>
@@ -44,7 +60,7 @@ export function LandingAvatarShowcase() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.8, delay: 0.3 }}
-          className="mt-6 text-center"
+          className="mt-4 text-center"
         >
           <p
             className="text-white/40 text-xs tracking-[0.3em] uppercase"
