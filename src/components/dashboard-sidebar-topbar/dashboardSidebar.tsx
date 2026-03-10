@@ -14,18 +14,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import {
-  Activity,
   ArrowRightLeft,
   Bell,
   Bot,
-  Cake,
   Calendar,
   ChevronDown,
   ChevronRight,
   CircleDollarSign,
   Cpu,
   CreditCard,
-  Database,
   FileText,
   FolderCog,
   FlaskConical,
@@ -37,8 +34,6 @@ import {
   LayoutDashboard,
   Link2,
   LogOut,
-  MessageCircle,
-  PieChart,
   Radio,
   Repeat,
   Search,
