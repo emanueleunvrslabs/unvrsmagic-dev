@@ -5,7 +5,6 @@ import ThemeProvider from "./components/theme-provider";
 import { NotificationProvider } from "@/components/notifications/notification-provider";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HomeRedirect } from "./components/HomeRedirect";
-import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
 import PublicProjectDetail from "./pages/PublicProjectDetail";
@@ -49,7 +48,7 @@ const App = () => (
         <NotificationProvider>
         <BrowserRouter>
           <Routes>
-          <Route path="/" element={<Landing />} />
+          <Route path="/" element={<Navigate to="/auth" replace />} />
           <Route path="/dashboard" element={<HomeRedirect />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
