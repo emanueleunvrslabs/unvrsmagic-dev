@@ -5,7 +5,6 @@ import { SettingsSection } from "../shared/settings-section"
 import { SettingsToggle } from "../shared/settings-toggle"
 import { ApiKeysSection } from "./api-keys-section"
 import { AIAgentsSection } from "../ai-agents/ai-agents-section"
-import { NKMTAgentsSection } from "../ai-agents/nkmt-agents-section"
 import { ActiveSessionsSection } from "./active-sessions-section"
 import { LoginHistorySection } from "./login-history-section"
 import type { SecuritySettings, ApiKey, Session, LoginHistory } from "../../types"
@@ -37,10 +36,6 @@ export const SecurityTab: React.FC<SecurityTabProps> = ({
 
       <SettingsSection title="AI Agents" description="Connect and manage your AI agent providers">
         <AIAgentsSection apiKeys={apiKeys} onApiKeysChange={onApiKeysChange} />
-      </SettingsSection>
-
-      <SettingsSection title="NKMT Agents" description="Specialized AI agents for trading operations">
-        <NKMTAgentsSection apiKeys={apiKeys} />
       </SettingsSection>
     </div>
   )

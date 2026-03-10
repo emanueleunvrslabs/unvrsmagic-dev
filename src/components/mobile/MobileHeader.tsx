@@ -55,7 +55,6 @@ export function MobileHeader({
       '/settings': 'Settings',
       '/ai-social': 'AI Social',
       '/ai-art': 'AI Art',
-      '/nkmt-dashboard': 'NKMT',
     };
     return titleMap[path] || 'UNVRS Magic';
   };

@@ -25,8 +25,6 @@ interface MenuItem {
 const projectItems: MenuItem[] = [
   { icon: Bot, label: 'AI Social', path: '/ai-social/dashboard' },
   { icon: Image, label: 'AI Art', path: '/ai-art/generate-image' },
-  { icon: Zap, label: 'NKMT Dashboard', path: '/nkmt-dashboard' },
-  { icon: BarChart3, label: 'AI Bot', path: '/ai-bot' },
 ];
 
 const settingsItems: MenuItem[] = [
