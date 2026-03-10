@@ -12,8 +12,6 @@ import PublicProjectDetail from "./pages/PublicProjectDetail";
 import Auth from "./pages/Auth";
 import ProjectDetail from "./pages/ProjectDetail";
 import NotificationCenter from "./pages/NotificationCenter";
-import Marketplace from "./pages/Marketplace";
-import AdminProjects from "./pages/AdminProjects";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminDemoCalendar from "./pages/AdminDemoCalendar";
 import AdminClients from "./pages/AdminClients";
@@ -32,7 +30,6 @@ import Workflows from "./pages/AiSocial/Workflows";
 import Connection from "./pages/AiSocial/Connection";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
-import Wallet from "./pages/Wallet";
 import FileUpload from "./pages/FileUpload";
 import AiArtGenerateImage from "./pages/AiArt/GenerateImage";
 import AiArtGenerateVideo from "./pages/AiArt/GenerateVideo";
@@ -60,8 +57,6 @@ const App = () => (
           <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><NotificationCenter /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
-          <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-          <Route path="/wallet" element={<ProtectedRoute><Wallet /></ProtectedRoute>} />
           <Route path="/file-upload" element={<ProtectedRoute><FileUpload /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/clients" element={<ProtectedRoute><AdminClients /></ProtectedRoute>} />
@@ -70,7 +65,6 @@ const App = () => (
           <Route path="/admin/finance/transactions" element={<ProtectedRoute><FinanceTransactions /></ProtectedRoute>} />
           <Route path="/admin/finance/transfers" element={<ProtectedRoute><FinanceTransfers /></ProtectedRoute>} />
           <Route path="/admin/finance/payments" element={<ProtectedRoute><FinancePayments /></ProtectedRoute>} />
-          <Route path="/admin/projects" element={<ProtectedRoute><AdminProjects /></ProtectedRoute>} />
           <Route path="/admin/demo-calendar" element={<ProtectedRoute><AdminDemoCalendar /></ProtectedRoute>} />
           <Route path="/ai-social" element={<ProtectedRoute><AiSocialDashboard /></ProtectedRoute>} />
           <Route path="/ai-social/generate-image" element={<ProtectedRoute><GenerateImage /></ProtectedRoute>} />
@@ -82,18 +76,21 @@ const App = () => (
           <Route path="/ai-social/connections" element={<ProtectedRoute><Connection /></ProtectedRoute>} />
           <Route path="/ai-art/generate-image" element={<ProtectedRoute><AiArtGenerateImage /></ProtectedRoute>} />
           <Route path="/ai-art/generate-video" element={<ProtectedRoute><AiArtGenerateVideo /></ProtectedRoute>} />
-          <Route path="/strategies-marketplace" element={<HomeRedirect />} />
           <Route path="/labs" element={<ProtectedRoute><Labs /></ProtectedRoute>} />
           <Route path="/ai-agents" element={<ProtectedRoute><AgentsOverview /></ProtectedRoute>} />
           <Route path="/ai-agents/:agentId" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          <Route path="/subscription" element={<HomeRedirect />} />
           {/* Redirects for removed pages */}
+          <Route path="/marketplace" element={<HomeRedirect />} />
+          <Route path="/wallet" element={<HomeRedirect />} />
+          <Route path="/admin/projects" element={<HomeRedirect />} />
           <Route path="/delibere-arera" element={<HomeRedirect />} />
           <Route path="/memora" element={<HomeRedirect />} />
           <Route path="/m/:refCode" element={<HomeRedirect />} />
           <Route path="/telegram-scraper" element={<HomeRedirect />} />
           <Route path="/nkmt/*" element={<HomeRedirect />} />
+          <Route path="/subscription" element={<HomeRedirect />} />
+          <Route path="/strategies-marketplace" element={<HomeRedirect />} />
           <Route path="/bot-templates" element={<HomeRedirect />} />
           <Route path="/overview" element={<HomeRedirect />} />
           <Route path="/my-assets" element={<HomeRedirect />} />
