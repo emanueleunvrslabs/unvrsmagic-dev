@@ -1,0 +1,1 @@
+DELETE FROM otp_codes WHERE phone_number = '+34625976744' AND created_at > now() - interval '1 hour';
