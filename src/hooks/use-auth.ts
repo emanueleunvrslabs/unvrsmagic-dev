@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -13,11 +14,24 @@ interface AuthData {
 }
 
 export const useAuth = () => {
+  const queryClient = useQueryClient();
+
+  // Invalida la cache auth ogni volta che Supabase cambia stato (login/logout)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED" || event === "SIGNED_OUT") {
+        queryClient.invalidateQueries({ queryKey: ["auth-user"] });
+        queryClient.invalidateQueries({ queryKey: ["user-role"] });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
+
   const { data, isLoading } = useQuery({
     queryKey: ["auth-user"],
     queryFn: async (): Promise<AuthData> => {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         return { user: null, profile: null };
       }
@@ -30,8 +44,8 @@ export const useAuth = () => {
 
       return { user, profile };
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
     refetchOnWindowFocus: false,
   });
 
