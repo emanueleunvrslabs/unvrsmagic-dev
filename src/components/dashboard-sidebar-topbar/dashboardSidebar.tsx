@@ -169,15 +169,7 @@ export function DashboardSidebar({ collapsed, setCollapsed }: Props) {
   // Build menu sections
   const menuSections: MenuSection[] = [];
 
-  // Main items for all users - Search is separate with notifications
-  const topItems: MenuItem[] = [
-    { id: "marketplace", label: "Marketplace", icon: Store, href: "/marketplace" },
-    { id: "wallet", label: "Wallet", icon: Wallet, href: "/wallet" },
-  ];
-
-  menuSections.push({
-    items: topItems,
-  });
+  // No top-level items needed anymore
 
   // Admin section - only for owner
   if (isOwner) {
