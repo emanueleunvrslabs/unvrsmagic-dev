@@ -24,7 +24,7 @@ import {
   Cpu,
   CreditCard,
   FileText,
-  FolderCog,
+  
   FlaskConical,
   Gauge,
   Home,
