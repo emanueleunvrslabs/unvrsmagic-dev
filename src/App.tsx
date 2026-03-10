@@ -7,23 +7,10 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { HomeRedirect } from "./components/HomeRedirect";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
-import AiBot from "./pages/AiBot";
 import Settings from "./pages/Settings";
 import PublicProjectDetail from "./pages/PublicProjectDetail";
 import Auth from "./pages/Auth";
 import ProjectDetail from "./pages/ProjectDetail";
-import MktData from "./pages/MktData";
-import NKMTDashboard from "./pages/NKMTDashboard";
-import DerivData from "./pages/DerivData";
-import MacroData from "./pages/MacroData";
-import NKMTExchange from "./pages/NKMTExchange";
-import SentimentScout from "./pages/SentimentScout";
-import ChainAnalyst from "./pages/ChainAnalyst";
-import MarketModeler from "./pages/MarketModeler";
-import SignalMaker from "./pages/SignalMaker";
-import RiskMgr from "./pages/RiskMgr";
-import TradeExecutor from "./pages/TradeExecutor";
-import Reviewer from "./pages/Reviewer";
 import NotificationCenter from "./pages/NotificationCenter";
 import Marketplace from "./pages/Marketplace";
 import AdminProjects from "./pages/AdminProjects";
@@ -51,13 +38,9 @@ import AiArtGenerateImage from "./pages/AiArt/GenerateImage";
 import AiArtGenerateVideo from "./pages/AiArt/GenerateVideo";
 
 import Labs from "./pages/Labs";
-import DelibereArera from "./pages/DelibereArera";
 import Search from "./pages/Search";
 import AgentsOverview from "./pages/AiAgents/AgentsOverview";
 import AgentDashboard from "./pages/AiAgents/AgentDashboard";
-import Memora from "./pages/Memora";
-import MemoraSubmit from "./pages/MemoraSubmit";
-import TelegramScraper from "./pages/TelegramScraper";
 
 const queryClient = new QueryClient();
 
@@ -75,20 +58,6 @@ const App = () => (
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/project/:projectId" element={<PublicProjectDetail />} />
           <Route path="/projects/:projectId" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-          <Route path="/nkmt/exchange" element={<ProtectedRoute><NKMTExchange /></ProtectedRoute>} />
-          <Route path="/nkmt/mkt-data" element={<ProtectedRoute><MktData /></ProtectedRoute>} />
-          <Route path="/nkmt/deriv-data" element={<ProtectedRoute><DerivData /></ProtectedRoute>} />
-          <Route path="/nkmt/macro-data" element={<ProtectedRoute><MacroData /></ProtectedRoute>} />
-          <Route path="/nkmt/sentiment-scout" element={<ProtectedRoute><SentimentScout /></ProtectedRoute>} />
-          <Route path="/nkmt/chain-analyst" element={<ProtectedRoute><ChainAnalyst /></ProtectedRoute>} />
-          <Route path="/nkmt/market-modeler" element={<ProtectedRoute><MarketModeler /></ProtectedRoute>} />
-          <Route path="/nkmt/signal-maker" element={<ProtectedRoute><SignalMaker /></ProtectedRoute>} />
-          <Route path="/nkmt/risk-mgr" element={<ProtectedRoute><RiskMgr /></ProtectedRoute>} />
-          <Route path="/nkmt/trade-executor" element={<ProtectedRoute><TradeExecutor /></ProtectedRoute>} />
-          <Route path="/nkmt/reviewer" element={<ProtectedRoute><Reviewer /></ProtectedRoute>} />
-          <Route path="/nkmt/dashboard" element={<ProtectedRoute><NKMTDashboard /></ProtectedRoute>} />
-          <Route path="/nkmt/:exchange" element={<ProtectedRoute><AiBot /></ProtectedRoute>} />
-          <Route path="/nkmt" element={<Navigate to="/nkmt/dashboard" replace />} />
           <Route path="/notifications" element={<ProtectedRoute><NotificationCenter /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><Search /></ProtectedRoute>} />
           <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
@@ -115,14 +84,16 @@ const App = () => (
           <Route path="/ai-art/generate-video" element={<ProtectedRoute><AiArtGenerateVideo /></ProtectedRoute>} />
           <Route path="/strategies-marketplace" element={<HomeRedirect />} />
           <Route path="/labs" element={<ProtectedRoute><Labs /></ProtectedRoute>} />
-          <Route path="/delibere-arera" element={<ProtectedRoute><DelibereArera /></ProtectedRoute>} />
           <Route path="/ai-agents" element={<ProtectedRoute><AgentsOverview /></ProtectedRoute>} />
           <Route path="/ai-agents/:agentId" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
-          <Route path="/memora" element={<ProtectedRoute><Memora /></ProtectedRoute>} />
-          <Route path="/telegram-scraper" element={<ProtectedRoute><TelegramScraper /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           <Route path="/subscription" element={<HomeRedirect />} />
           {/* Redirects for removed pages */}
+          <Route path="/delibere-arera" element={<HomeRedirect />} />
+          <Route path="/memora" element={<HomeRedirect />} />
+          <Route path="/m/:refCode" element={<HomeRedirect />} />
+          <Route path="/telegram-scraper" element={<HomeRedirect />} />
+          <Route path="/nkmt/*" element={<HomeRedirect />} />
           <Route path="/bot-templates" element={<HomeRedirect />} />
           <Route path="/overview" element={<HomeRedirect />} />
           <Route path="/my-assets" element={<HomeRedirect />} />
@@ -139,8 +110,6 @@ const App = () => (
           <Route path="/control-panel/*" element={<HomeRedirect />} />
           <Route path="/invite-friends" element={<Navigate to="/settings" replace />} />
           <Route path="/help-center" element={<Navigate to="/settings" replace />} />
-          {/* Public memora submit with ref code - must be before catch-all */}
-          <Route path="/m/:refCode" element={<MemoraSubmit />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
