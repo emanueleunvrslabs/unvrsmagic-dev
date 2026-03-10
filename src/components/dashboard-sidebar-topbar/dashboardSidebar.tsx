@@ -231,28 +231,6 @@ export function DashboardSidebar({ collapsed, setCollapsed }: Props) {
             { id: "ai-art-video", label: "Generate Video", icon: Video, href: "/ai-art/generate-video" },
           ]
         },
-        { id: "delibere-arera", label: "Delibere Arera", icon: FileText, href: "/delibere-arera" },
-        { id: "memora", label: "Memora", icon: Cake, href: "/memora" },
-        { id: "telegram-scraper", label: "Telegram Scraper", icon: MessageCircle, href: "/telegram-scraper" },
-        { 
-          id: "nkmt", 
-          label: "NKMT", 
-          icon: Layers,
-          subItems: [
-            { id: "nkmt-dashboard", label: "Dashboard", icon: Home, href: "/nkmt/dashboard" },
-            { id: "nkmt-mkt-data", label: "MKT.DATA", icon: Database, href: "/nkmt/mkt-data" },
-            { id: "nkmt-deriv-data", label: "DERIV.DATA", icon: Activity, href: "/nkmt/deriv-data" },
-            { id: "nkmt-macro-data", label: "MACRO.DATA", icon: PieChart, href: "/nkmt/macro-data" },
-            { id: "nkmt-sentiment-scout", label: "Sentiment.Scout", icon: Activity, href: "/nkmt/sentiment-scout" },
-            { id: "nkmt-chain-analyst", label: "Chain.Analyst", icon: Activity, href: "/nkmt/chain-analyst" },
-            { id: "nkmt-market-modeler", label: "Market.Modeler", icon: Activity, href: "/nkmt/market-modeler" },
-            { id: "nkmt-signal-maker", label: "Signal.Maker", icon: Activity, href: "/nkmt/signal-maker" },
-            { id: "nkmt-risk-mgr", label: "Risk.Mgr", icon: Activity, href: "/nkmt/risk-mgr" },
-            { id: "nkmt-trade-executor", label: "Trade.Executor", icon: Activity, href: "/nkmt/trade-executor" },
-            { id: "nkmt-reviewer", label: "Reviewer", icon: Activity, href: "/nkmt/reviewer" },
-            { id: "nkmt-exchange", label: "Exchange", icon: Repeat, href: "/nkmt/exchange" },
-          ]
-        },
       ],
     });
   }
