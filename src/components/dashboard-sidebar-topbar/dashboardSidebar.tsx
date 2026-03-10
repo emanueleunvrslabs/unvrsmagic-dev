@@ -33,6 +33,7 @@ import {
   LayoutDashboard,
   Link2,
   LogOut,
+  MessageCircle,
   Radio,
   Repeat,
   Search,
@@ -303,6 +304,27 @@ export function DashboardSidebar({ collapsed, setCollapsed }: Props) {
             { id: "agent-social-publisher", label: "SOCIAL.PUBLISHER", icon: Send, href: "/ai-agents/social-publisher" },
             { id: "agent-social-reply", label: "SOCIAL.REPLY", icon: Zap, href: "/ai-agents/social-reply" },
           ]
+        },
+      ],
+    });
+  }
+
+  // OpenClaw section - only for owner
+  if (isOwner) {
+    menuSections.push({
+      title: "OpenClaw",
+      collapsible: false,
+      items: [
+        {
+          id: "openclaw",
+          label: "OpenClaw",
+          icon: Bot,
+          subItems: [
+            { id: "openclaw-chat", label: "Chat", icon: MessageCircle, href: "/openclaw?tab=chat" },
+            { id: "openclaw-leads", label: "Leads", icon: Users, href: "/openclaw?tab=leads" },
+            { id: "openclaw-images", label: "Immagini", icon: Image, href: "/openclaw?tab=images" },
+            { id: "openclaw-bot", label: "Bot Control", icon: Zap, href: "/openclaw?tab=bot" },
+          ],
         },
       ],
     });

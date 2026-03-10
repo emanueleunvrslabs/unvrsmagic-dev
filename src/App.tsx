@@ -38,6 +38,7 @@ import Labs from "./pages/Labs";
 import Search from "./pages/Search";
 import AgentsOverview from "./pages/AiAgents/AgentsOverview";
 import AgentDashboard from "./pages/AiAgents/AgentDashboard";
+import OpenClawDashboard from "./pages/OpenClaw/OpenClawDashboard";
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
           <Route path="/labs" element={<ProtectedRoute><Labs /></ProtectedRoute>} />
           <Route path="/ai-agents" element={<ProtectedRoute><AgentsOverview /></ProtectedRoute>} />
           <Route path="/ai-agents/:agentId" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
+          <Route path="/openclaw" element={<ProtectedRoute><OpenClawDashboard /></ProtectedRoute>} />
           <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           {/* Redirects for removed pages */}
           <Route path="/marketplace" element={<HomeRedirect />} />
