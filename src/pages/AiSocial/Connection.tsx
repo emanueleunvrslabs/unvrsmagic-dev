@@ -1,90 +1,72 @@
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import "@/components/labs/SocialMediaCard.css";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Link, Unlink } from "lucide-react";
+import { Unlink, Plus, Instagram, Linkedin, Youtube, Facebook, ExternalLink } from "lucide-react";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { OAuthResponse, YouTubeConnection, LinkedInConnection, FunctionsInvokeError } from "@/types/edge-functions";
+import type { OAuthResponse, FunctionsInvokeError } from "@/types/edge-functions";
+
+interface ConnectedAccount {
+  id: string;
+  provider: string;
+  label: string | null;
+  owner_id: string | null;
+  created_at: string;
+}
+
+const TikTokIcon = () => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">
+    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.69a8.28 8.28 0 0 0 4.76 1.5V6.73a4.83 4.83 0 0 1-1-.04z"/>
+  </svg>
+);
+
+const PLATFORM_ICONS: Record<string, React.ReactNode> = {
+  instagram: <Instagram className="h-5 w-5 text-white" />,
+  linkedin: <Linkedin className="h-5 w-5 text-white" />,
+  youtube: <Youtube className="h-5 w-5 text-white" />,
+  facebook: <Facebook className="h-5 w-5 text-white" />,
+  tiktok: <TikTokIcon />,
+};
+
+type PlatformConfig = {
+  id: string;
+  name: string;
+  color: string;
+  oauthFn: string | null;
+  autoConnected?: boolean; // connected automatically via another platform
+  comingSoon?: boolean;
+};
+
+const PLATFORMS: PlatformConfig[] = [
+  { id: "instagram", name: "Instagram", color: "from-purple-500 to-pink-500", oauthFn: "instagram-oauth" },
+  { id: "facebook", name: "Facebook", color: "from-blue-700 to-blue-500", oauthFn: null, autoConnected: true },
+  { id: "linkedin", name: "LinkedIn", color: "from-blue-600 to-blue-400", oauthFn: "linkedin-oauth" },
+  { id: "youtube", name: "YouTube", color: "from-red-600 to-red-400", oauthFn: "youtube-oauth" },
+  { id: "tiktok", name: "TikTok", color: "from-gray-800 to-gray-600", oauthFn: null, comingSoon: true },
+];
 
 export default function Connection() {
   const queryClient = useQueryClient();
 
-  const { data: instagramConnection, isLoading: isLoadingInstagram } = useQuery({
-    queryKey: ['instagram-connection'],
+  const { data: connections, isLoading } = useQuery({
+    queryKey: ['social-connections'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
-
+      if (!session) return [];
       const { data, error } = await supabase
         .from('api_keys')
-        .select('*')
+        .select('id, provider, label, owner_id, created_at')
         .eq('user_id', session.user.id)
-        .eq('provider', 'instagram')
-        .maybeSingle();
-
+        .in('provider', ['instagram', 'linkedin', 'youtube', 'facebook', 'tiktok'])
+        .order('created_at', { ascending: true });
       if (error) throw error;
-      return data;
+      return (data || []) as ConnectedAccount[];
     },
   });
 
-  const { data: youtubeConnection, isLoading: isLoadingYoutube } = useQuery({
-    queryKey: ['youtube-connection'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
-
-      const { data, error } = await supabase
-        .from('api_keys')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .eq('provider', 'youtube')
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      if (data?.api_key) {
-        try {
-          const parsed = JSON.parse(data.api_key);
-          return { ...data, channelTitle: parsed.channel_title };
-        } catch {
-          return data;
-        }
-      }
-      return data;
-    },
-  });
-
-  const { data: linkedinConnection, isLoading: isLoadingLinkedin } = useQuery({
-    queryKey: ['linkedin-connection'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
-
-      const { data, error } = await supabase
-        .from('api_keys')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .eq('provider', 'linkedin')
-        .maybeSingle();
-
-      if (error) throw error;
-      
-      if (data?.api_key) {
-        try {
-          const parsed = JSON.parse(data.api_key);
-          return { ...data, name: parsed.name };
-        } catch {
-          return data;
-        }
-      }
-      return data;
-    },
-  });
-
-  const connectInstagram = async () => {
+  const connectPlatform = async (provider: string, oauthFn: string) => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
@@ -92,75 +74,7 @@ export default function Connection() {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke("instagram-oauth", {
-        body: {
-          action: "start",
-          user_id: session.user.id,
-        },
-      });
-
-      console.log('Instagram OAuth response:', { data, error });
-
-      if (error) {
-        console.error("Error starting OAuth:", error);
-        const funcError = error as FunctionsInvokeError;
-        toast.error(funcError.message || "Failed to connect Instagram");
-        return;
-      }
-
-      const oauthData = data as OAuthResponse | null;
-      if (oauthData?.error) {
-        console.error("Instagram OAuth error:", oauthData.error);
-        toast.error(oauthData.error);
-        return;
-      }
-
-      if (oauthData?.authUrl) {
-        console.log('Redirecting to Instagram:', oauthData.authUrl);
-        window.location.href = oauthData.authUrl;
-      } else {
-        console.error("Invalid response:", data);
-        toast.error("Invalid response from Instagram OAuth");
-      }
-    } catch (error) {
-      console.error("Error starting OAuth:", error);
-      toast.error("Failed to connect Instagram");
-    }
-  };
-
-  const disconnectInstagram = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in first");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('api_keys')
-        .delete()
-        .eq('user_id', session.user.id)
-        .eq('provider', 'instagram');
-
-      if (error) throw error;
-
-      toast.success("Instagram disconnected successfully!");
-      queryClient.invalidateQueries({ queryKey: ['instagram-connection'] });
-    } catch (error) {
-      console.error("Error disconnecting Instagram:", error);
-      toast.error("Failed to disconnect Instagram");
-    }
-  };
-
-  const connectYoutube = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in first");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("youtube-oauth", {
+      const { data, error } = await supabase.functions.invoke(oauthFn, {
         body: {
           action: "start",
           user_id: session.user.id,
@@ -168,324 +82,165 @@ export default function Connection() {
         },
       });
 
-      console.log('YouTube OAuth response:', { data, error });
-
       if (error) {
-        console.error("Error starting YouTube OAuth:", error);
         const funcError = error as FunctionsInvokeError;
-        toast.error(funcError.message || "Failed to connect YouTube");
+        toast.error(funcError.message || `Failed to connect ${provider}`);
         return;
       }
 
       const oauthData = data as OAuthResponse | null;
       if (oauthData?.error) {
-        console.error("YouTube OAuth error:", oauthData.error);
         toast.error(oauthData.error);
         return;
       }
 
       if (oauthData?.authUrl) {
-        console.log('Redirecting to YouTube:', oauthData.authUrl);
         window.location.href = oauthData.authUrl;
       } else {
-        console.error("Invalid response:", data);
-        toast.error("Invalid response from YouTube OAuth");
+        toast.error("Invalid OAuth response");
       }
-    } catch (error) {
-      console.error("Error starting YouTube OAuth:", error);
-      toast.error("Failed to connect YouTube");
+    } catch {
+      toast.error(`Failed to connect ${provider}`);
     }
   };
 
-  const disconnectYoutube = async () => {
+  const disconnectAccount = async (accountId: string, provider: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in first");
-        return;
-      }
-
       const { error } = await supabase
         .from('api_keys')
         .delete()
-        .eq('user_id', session.user.id)
-        .eq('provider', 'youtube');
+        .eq('id', accountId);
 
       if (error) throw error;
-
-      toast.success("YouTube disconnected successfully!");
-      queryClient.invalidateQueries({ queryKey: ['youtube-connection'] });
-    } catch (error) {
-      console.error("Error disconnecting YouTube:", error);
-      toast.error("Failed to disconnect YouTube");
-    }
-  };
-
-  const connectLinkedin = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in first");
-        return;
-      }
-
-      const { data, error } = await supabase.functions.invoke("linkedin-oauth", {
-        body: {
-          action: "start",
-          user_id: session.user.id,
-          origin: window.location.origin,
-        },
-      });
-
-      console.log('LinkedIn OAuth response:', { data, error });
-
-      if (error) {
-        console.error("Error starting LinkedIn OAuth:", error);
-        const funcError = error as FunctionsInvokeError;
-        toast.error(funcError.message || "Failed to connect LinkedIn");
-        return;
-      }
-
-      const oauthData = data as OAuthResponse | null;
-      if (oauthData?.error) {
-        console.error("LinkedIn OAuth error:", oauthData.error);
-        toast.error(oauthData.error);
-        return;
-      }
-
-      if (oauthData?.authUrl) {
-        console.log('Redirecting to LinkedIn:', oauthData.authUrl);
-        window.location.href = oauthData.authUrl;
-      } else {
-        console.error("Invalid response:", data);
-        toast.error("Invalid response from LinkedIn OAuth");
-      }
-    } catch (error) {
-      console.error("Error starting LinkedIn OAuth:", error);
-      toast.error("Failed to connect LinkedIn");
-    }
-  };
-
-  const disconnectLinkedin = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error("Please log in first");
-        return;
-      }
-
-      const { error } = await supabase
-        .from('api_keys')
-        .delete()
-        .eq('user_id', session.user.id)
-        .eq('provider', 'linkedin');
-
-      if (error) throw error;
-
-      toast.success("LinkedIn disconnected successfully!");
-      queryClient.invalidateQueries({ queryKey: ['linkedin-connection'] });
-    } catch (error) {
-      console.error("Error disconnecting LinkedIn:", error);
-      toast.error("Failed to disconnect LinkedIn");
+      toast.success(`${provider} account disconnected`);
+      queryClient.invalidateQueries({ queryKey: ['social-connections'] });
+    } catch {
+      toast.error("Failed to disconnect");
     }
   };
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    
-    // Instagram callback
+
     if (params.get('success') === 'true') {
-      toast.success("Instagram connected successfully!");
-      queryClient.invalidateQueries({ queryKey: ['instagram-connection'] });
-      window.history.replaceState({}, '', '/ai-social/connection');
+      const count = params.get('connected');
+      toast.success(count ? `${count} account(s) connected!` : "Connected!", { duration: 5000 });
+      queryClient.invalidateQueries({ queryKey: ['social-connections'] });
+      window.history.replaceState({}, '', '/ai-social/connections');
     }
-    
-    // YouTube callback
     if (params.get('youtube_success') === 'true') {
       const channel = params.get('channel');
-      toast.success(`YouTube connected successfully! Channel: ${channel || 'Connected'}`);
-      queryClient.invalidateQueries({ queryKey: ['youtube-connection'] });
-      window.history.replaceState({}, '', '/ai-social/connection');
+      toast.success(`YouTube connected! Channel: ${channel || 'Connected'}`);
+      queryClient.invalidateQueries({ queryKey: ['social-connections'] });
+      window.history.replaceState({}, '', '/ai-social/connections');
     }
-
-    // LinkedIn callback
     if (params.get('linkedin_success') === 'true') {
       const name = params.get('name');
-      toast.success(`LinkedIn connected successfully! ${name || ''}`);
-      queryClient.invalidateQueries({ queryKey: ['linkedin-connection'] });
-      window.history.replaceState({}, '', '/ai-social/connection');
+      toast.success(`LinkedIn connected! ${name || ''}`);
+      queryClient.invalidateQueries({ queryKey: ['social-connections'] });
+      window.history.replaceState({}, '', '/ai-social/connections');
     }
-    
-    // Error handling
     const error = params.get('error');
     if (error) {
-      toast.error(`Connection failed: ${decodeURIComponent(error)}`);
-      window.history.replaceState({}, '', '/ai-social/connection');
+      const msg = decodeURIComponent(error);
+      console.error('[Connection] OAuth error:', msg);
+      toast.error(`Connection failed: ${msg}`, { duration: 10000 });
+      window.history.replaceState({}, '', '/ai-social/connections');
     }
   }, [queryClient]);
 
+  const getAccountsForPlatform = (platformId: string) =>
+    connections?.filter(c => c.provider === platformId) || [];
+
+  const totalConnected = connections?.length || 0;
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-3xl">
         <div>
-          <h1 className="text-3xl font-bold">Social Media Connections</h1>
-          <p className="text-muted-foreground mt-2">
-            Connect your social media accounts for automated publishing
+          <h1 className="text-2xl font-bold">Connections</h1>
+          <p className="text-sm text-white/40 mt-1">
+            {totalConnected} account{totalConnected !== 1 ? 's' : ''} connected
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Instagram</CardTitle>
-                <Badge 
-                  variant="outline"
-                  className={instagramConnection ? "bg-green-500/10 text-green-500 border-green-500/20" : ""}
-                >
-                  {instagramConnection ? "Connected" : "Not Connected"}
-                </Badge>
-              </div>
-              <CardDescription>
-                {instagramConnection 
-                  ? `Connected to Instagram Business Account` 
-                  : "Connect your Instagram account"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {instagramConnection ? (
-                <Button 
-                  className="w-full bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/30"
-                  variant="ghost"
-                  onClick={disconnectInstagram}
-                >
-                  <Unlink className="mr-2 h-4 w-4" />
-                  Disconnect Instagram
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full"
-                  onClick={connectInstagram}
-                  disabled={isLoadingInstagram}
-                >
-                  <Link className="mr-2 h-4 w-4" />
-                  Connect Instagram
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+        <div className="grid gap-3">
+          {PLATFORMS.map((platform) => {
+            const accounts = getAccountsForPlatform(platform.id);
+            const hasAccounts = accounts.length > 0;
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>YouTube</CardTitle>
-                <Badge 
-                  variant="outline"
-                  className={youtubeConnection ? "bg-green-500/10 text-green-500 border-green-500/20" : ""}
-                >
-                  {youtubeConnection ? "Connected" : "Not Connected"}
-                </Badge>
-              </div>
-              <CardDescription>
-                {youtubeConnection 
-                  ? `Connected to: ${(youtubeConnection as YouTubeConnection).channelTitle || 'YouTube Channel'}` 
-                  : "Connect your YouTube channel for live streaming"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {youtubeConnection ? (
-                <Button 
-                  className="w-full bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/30"
-                  variant="ghost"
-                  onClick={disconnectYoutube}
-                >
-                  <Unlink className="mr-2 h-4 w-4" />
-                  Disconnect YouTube
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full"
-                  onClick={connectYoutube}
-                  disabled={isLoadingYoutube}
-                >
-                  <Link className="mr-2 h-4 w-4" />
-                  Connect YouTube
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+            return (
+              <div key={platform.id} className="labs-client-card rounded-2xl overflow-hidden">
+                {/* Platform header */}
+                <div className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${platform.color} flex items-center justify-center shrink-0`}>
+                      {PLATFORM_ICONS[platform.id]}
+                    </div>
+                    <div>
+                      <h3 className="text-white font-medium text-sm">{platform.name}</h3>
+                      <p className="text-[11px] text-white/30">
+                        {platform.comingSoon
+                          ? "Coming soon"
+                          : platform.autoConnected
+                            ? hasAccounts
+                              ? `${accounts.length} page${accounts.length === 1 ? '' : 's'} · auto-connected via Instagram`
+                              : "Auto-connected when you link Instagram"
+                            : hasAccounts
+                              ? `${accounts.length} account${accounts.length === 1 ? '' : 's'}`
+                              : "Not connected"}
+                      </p>
+                    </div>
+                  </div>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>LinkedIn</CardTitle>
-                <Badge 
-                  variant="outline"
-                  className={linkedinConnection ? "bg-green-500/10 text-green-500 border-green-500/20" : ""}
-                >
-                  {linkedinConnection ? "Connected" : "Not Connected"}
-                </Badge>
-              </div>
-              <CardDescription>
-                {linkedinConnection 
-                  ? `Connected as: ${(linkedinConnection as LinkedInConnection).name || 'LinkedIn User'}` 
-                  : "Connect your LinkedIn account for publishing"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {linkedinConnection ? (
-                <Button 
-                  className="w-full bg-destructive/10 text-destructive border border-destructive/20 hover:bg-destructive/20 hover:border-destructive/30"
-                  variant="ghost"
-                  onClick={disconnectLinkedin}
-                >
-                  <Unlink className="mr-2 h-4 w-4" />
-                  Disconnect LinkedIn
-                </Button>
-              ) : (
-                <Button 
-                  className="w-full"
-                  onClick={connectLinkedin}
-                  disabled={isLoadingLinkedin}
-                >
-                  <Link className="mr-2 h-4 w-4" />
-                  Connect LinkedIn
-                </Button>
-              )}
-            </CardContent>
-          </Card>
+                  {platform.oauthFn && (
+                    <Button
+                      size="sm"
+                      variant={hasAccounts ? "outline" : "default"}
+                      onClick={() => connectPlatform(platform.id, platform.oauthFn!)}
+                      className={`gap-1.5 text-xs h-8 ${hasAccounts ? 'border-white/10 text-white/60 hover:text-white hover:border-white/20' : ''}`}
+                    >
+                      <Plus className="h-3 w-3" />
+                      {hasAccounts ? "Add" : "Connect"}
+                    </Button>
+                  )}
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Facebook</CardTitle>
-                <Badge variant="outline">Not Connected</Badge>
-              </div>
-              <CardDescription>Connect your Facebook page</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" disabled>
-                <Link className="mr-2 h-4 w-4" />
-                Coming Soon
-              </Button>
-            </CardContent>
-          </Card>
+                  {platform.comingSoon && (
+                    <span className="text-[11px] text-white/20 px-3 py-1.5 rounded-lg border border-white/5">
+                      Soon
+                    </span>
+                  )}
+                </div>
 
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>TikTok</CardTitle>
-                <Badge variant="outline">Not Connected</Badge>
+                {/* Connected accounts list */}
+                {hasAccounts && (
+                  <div className="px-5 pb-4 space-y-1.5">
+                    {accounts.map((account) => (
+                      <div
+                        key={account.id}
+                        className="flex items-center justify-between py-2.5 px-3.5 rounded-xl bg-white/[0.03] border border-white/[0.06] group"
+                      >
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+                          <span className="text-sm text-white/80 truncate">
+                            {account.label || `${platform.name} Account`}
+                          </span>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => disconnectAccount(account.id, platform.name)}
+                          className="text-white/20 hover:text-red-400 hover:bg-red-500/10 h-7 px-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Unlink className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <CardDescription>Connect your TikTok account for live streaming</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" disabled>
-                <Link className="mr-2 h-4 w-4" />
-                Coming Soon
-              </Button>
-            </CardContent>
-          </Card>
+            );
+          })}
         </div>
       </div>
     </DashboardLayout>
