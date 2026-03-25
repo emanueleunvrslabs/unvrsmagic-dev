@@ -118,7 +118,7 @@ export default function Auth() {
       if (error) throw error;
 
       if (data.success) {
-        toast.success("OTP code sent on WhatsApp!");
+        toast.success("OTP code sent on Telegram!");
         setStep("otp");
       } else {
         throw new Error(data.error || "Error sending OTP");
@@ -323,16 +323,16 @@ export default function Auth() {
             className="text-2xl font-bold text-white mb-2"
             style={{ fontFamily: "Orbitron, sans-serif" }}
           >
-            {step === "username" ? "Choose Username" : "Login with WhatsApp"}
+            {step === "username" ? "Choose Username" : "Login with Telegram"}
           </h1>
           <p 
             className="text-white/60 text-sm"
             style={{ fontFamily: "Orbitron, sans-serif" }}
           >
             {step === "phone" 
-              ? <>Enter your phone number to receive<br />the OTP code</>
+              ? <>Enter your phone number to receive<br />the OTP code via Telegram</>
               : step === "otp"
-              ? "Enter the code you received on WhatsApp"
+              ? "Enter the code you received on Telegram"
               : "Choose a unique username for your account"
             }
           </p>

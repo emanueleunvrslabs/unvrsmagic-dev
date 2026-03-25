@@ -17,7 +17,6 @@ serve(async (req) => {
       );
     }
 
-    // Validate phone number format (E.164 format)
     const phoneRegex = /^\+[1-9]\d{1,14}$/;
     if (!phoneRegex.test(phoneNumber)) {
       return new Response(
@@ -26,42 +25,27 @@ serve(async (req) => {
       );
     }
 
-    // Validate phone number length
-    if (phoneNumber.length < 8 || phoneNumber.length > 16) {
-      return new Response(
-        JSON.stringify({ error: 'Phone number length must be between 8 and 16 characters' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Initialize Supabase admin client
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Rate limiting: Check OTP requests in the last hour (max 5 per phone number)
+    // Rate limiting: max 5 OTP per hour per number
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-    const { count: recentOtpCount, error: countError } = await supabaseAdmin
+    const { count: recentOtpCount } = await supabaseAdmin
       .from('otp_codes')
       .select('*', { count: 'exact', head: true })
       .eq('phone_number', phoneNumber)
       .gte('created_at', oneHourAgo);
 
-    if (countError) {
-      console.error('Error checking rate limit:', countError);
-      throw new Error('Failed to check rate limit');
-    }
-
     if (recentOtpCount !== null && recentOtpCount >= 5) {
-      console.log(`Rate limit exceeded for phone: ${phoneNumber}, count: ${recentOtpCount}`);
       return new Response(
         JSON.stringify({ error: 'Too many OTP requests. Please try again later.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Clean up old unverified OTP codes for this phone number
+    // Clean up old unverified codes
     await supabaseAdmin
       .from('otp_codes')
       .delete()
@@ -70,68 +54,46 @@ serve(async (req) => {
 
     // Generate 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Set expiration to 10 minutes from now
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
     const { error: dbError } = await supabaseAdmin
       .from('otp_codes')
-      .insert({
-        phone_number: phoneNumber,
-        code: otp,
-        expires_at: expiresAt,
-        verified: false
-      });
+      .insert({ phone_number: phoneNumber, code: otp, expires_at: expiresAt, verified: false });
 
-    if (dbError) {
-      throw new Error('Failed to save OTP');
-    }
+    if (dbError) throw new Error('Failed to save OTP');
 
-    // Send OTP via Wasender WhatsApp API
-    const wasenderApiKey = Deno.env.get('WASENDER_API_KEY');
-    
-    const message = `Il tuo codice di verifica è: ${otp}\n\nQuesto codice scadrà tra 10 minuti.`;
-    
-    const wasenderResponse = await fetch('https://www.wasenderapi.com/api/send-message', {
+    // Send OTP via Telegram
+    const botToken = Deno.env.get('TELEGRAM_BOT_TOKEN');
+    const chatId = Deno.env.get('TELEGRAM_OWNER_CHAT_ID');
+
+    const message = `🔐 *UNVRS LABS — Codice di verifica*\n\nNumero: \`${phoneNumber}\`\nCodice: \`${otp}\`\n\n_Scade tra 10 minuti._`;
+
+    const tgResponse = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${wasenderApiKey}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        to: phoneNumber,
-        text: message
+        chat_id: chatId,
+        text: message,
+        parse_mode: 'Markdown',
       }),
     });
 
-    if (!wasenderResponse.ok) {
-      throw new Error('Failed to send WhatsApp message');
+    if (!tgResponse.ok) {
+      const err = await tgResponse.text();
+      console.error('Telegram error:', err);
+      throw new Error('Failed to send Telegram message');
     }
 
-    const wasenderData = await wasenderResponse.json();
-    console.log('OTP sent successfully via WhatsApp:', wasenderData);
-
     return new Response(
-      JSON.stringify({ 
-        success: true,
-        message: 'OTP sent successfully',
-        expiresAt 
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ success: true, message: 'OTP sent via Telegram', expiresAt }),
+      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
-    console.error('Error in send-otp function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Error in send-otp:', error);
     return new Response(
-      JSON.stringify({ error: errorMessage }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
